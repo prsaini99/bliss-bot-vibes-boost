@@ -5,19 +5,33 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckIcon, XIcon, StarIcon, BadgeCheckIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const PremiumPlans = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSelectPlan = (plan: string) => {
-    // In a real app, you'd handle subscription logic here
-    console.log(`Selected ${plan} plan`);
-    navigate('/profile');
+    if (plan === 'free') {
+      navigate('/free-plan');
+      return;
+    }
+    
+    toast({
+      title: `${plan} plan selected`,
+      description: "In a real app, this would open payment processing.",
+      duration: 3000,
+    });
+    
+    // Simulate subscription process
+    setTimeout(() => {
+      navigate('/profile');
+    }, 1500);
   };
 
   return (
     <PageWrapper>
-      <div className="w-full max-w-6xl px-4">
+      <div className="w-full max-w-6xl px-4 animate-fade-in">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2">Choose Your BlissBot Plan</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -27,7 +41,7 @@ const PremiumPlans = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Free Plan */}
-          <Card className="p-6 border-2 border-gray-200 flex flex-col">
+          <Card className="p-6 border-2 border-gray-200 flex flex-col hover:shadow-md transition-all">
             <div className="text-center mb-6">
               <h2 className="text-xl font-bold mb-2">Free</h2>
               <div className="text-3xl font-bold mb-1">$0</div>
@@ -36,23 +50,23 @@ const PremiumPlans = () => {
 
             <div className="flex-grow space-y-4 mb-6">
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Daily mood check</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Basic video recommendations</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>5 videos per day</span>
               </div>
               <div className="flex items-start">
-                <XIcon className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                <XIcon className="h-5 w-5 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
                 <span className="text-gray-400">Personalized algorithm</span>
               </div>
               <div className="flex items-start">
-                <XIcon className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                <XIcon className="h-5 w-5 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
                 <span className="text-gray-400">Ad-free experience</span>
               </div>
             </div>
@@ -62,12 +76,12 @@ const PremiumPlans = () => {
               className="w-full"
               onClick={() => handleSelectPlan('free')}
             >
-              Current Plan
+              View Details
             </Button>
           </Card>
 
           {/* Premium Plan */}
-          <Card className="p-6 border-2 border-bliss-teal relative flex flex-col">
+          <Card className="p-6 border-2 border-bliss-teal relative flex flex-col hover:shadow-lg transition-all transform scale-[1.02]">
             <div className="absolute top-0 right-0 bg-bliss-teal text-white px-3 py-1 text-sm font-medium rounded-bl-lg rounded-tr-md">
               Popular
             </div>
@@ -79,23 +93,23 @@ const PremiumPlans = () => {
 
             <div className="flex-grow space-y-4 mb-6">
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Unlimited mood checks</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Advanced video recommendations</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Unlimited videos</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Personalized algorithm</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Ad-free experience</span>
               </div>
             </div>
@@ -109,7 +123,7 @@ const PremiumPlans = () => {
           </Card>
 
           {/* Enterprise Plan */}
-          <Card className="p-6 border-2 border-gray-200 flex flex-col">
+          <Card className="p-6 border-2 border-gray-200 flex flex-col hover:shadow-md transition-all">
             <div className="text-center mb-6">
               <h2 className="text-xl font-bold mb-2">Enterprise</h2>
               <div className="text-3xl font-bold mb-1">$19.99<span className="text-base font-normal">/month</span></div>
@@ -118,23 +132,23 @@ const PremiumPlans = () => {
 
             <div className="flex-grow space-y-4 mb-6">
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Everything in Premium</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Team member accounts</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Admin dashboard</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Analytics and reporting</span>
               </div>
               <div className="flex items-start">
-                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                <CheckIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
                 <span>Priority support</span>
               </div>
             </div>
