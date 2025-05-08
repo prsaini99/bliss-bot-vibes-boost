@@ -42,6 +42,17 @@ const Header: React.FC = () => {
         </Link>
         
         <Link 
+          to="/premium" 
+          className={`text-sm px-3 py-2 ${
+            location.pathname === '/premium' 
+              ? 'text-bliss-teal font-medium' 
+              : 'text-gray-500 hover:text-gray-800'
+          }`}
+        >
+          Premium
+        </Link>
+        
+        <Link 
           to="/profile" 
           className={`text-sm px-3 py-2 ${
             location.pathname === '/profile' 

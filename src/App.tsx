@@ -11,6 +11,8 @@ import Signup from "./pages/Signup";
 import VideoFeed from "./pages/VideoFeed";
 import Profile from "./pages/Profile";
 import MoodAssessmentPage from "./pages/MoodAssessment";
+import PremiumPlans from "./pages/PremiumPlans";
+import NonPremium from "./pages/NonPremium";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/feed" element={<VideoFeed />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/assessment" element={<MoodAssessmentPage />} />
+          <Route path="/premium" element={<PremiumPlans />} />
+          <Route path="/free-plan" element={<NonPremium />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
