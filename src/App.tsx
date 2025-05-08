@@ -13,6 +13,9 @@ import Profile from "./pages/Profile";
 import MoodAssessmentPage from "./pages/MoodAssessment";
 import PremiumPlans from "./pages/PremiumPlans";
 import NonPremium from "./pages/NonPremium";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import HealthConnect from "./pages/HealthConnect";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -27,11 +30,16 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           
-          {/* App Routes */}
+          {/* App Core Routes */}
           <Route path="/feed" element={<VideoFeed />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/assessment" element={<MoodAssessmentPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          
+          {/* Health Integration Routes */}
+          <Route path="/health-connect" element={<HealthConnect />} />
           
           {/* Plan Routes */}
           <Route path="/premium" element={<PremiumPlans />} />
