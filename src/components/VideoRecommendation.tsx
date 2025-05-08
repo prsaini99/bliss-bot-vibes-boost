@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Heart } from 'lucide-react';
+import { Heart, ThumbsUp, ThumbsDown, SkipForward } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Mood = 'happy' | 'sad' | 'anxious' | 'calm' | 'energetic' | 'tired' | null;
 
@@ -124,28 +125,96 @@ const VideoRecommendation: React.FC<VideoRecommendationProps> = ({ mood, onResta
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [likedVideos, setLikedVideos] = useState<string[]>([]);
+  const [displayedVideos, setDisplayedVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
-  const videos = mood ? videoDatabase[mood] || videoDatabase.happy : videoDatabase.happy;
-  const currentVideo = videos[currentVideoIndex % videos.length];
+  const endOfFeedRef = useRef<HTMLDivElement>(null);
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  // Initialize with the first 2 videos for the current mood
+  const moodVideos = mood ? videoDatabase[mood] || videoDatabase.happy : videoDatabase.happy;
   
-  const handleNextVideo = () => {
+  // Initialize displayed videos on first load or when mood changes
+  useEffect(() => {
+    setDisplayedVideos(moodVideos.slice(0, 2));
+    setCurrentVideoIndex(0);
     setIsPlaying(false);
+  }, [mood]);
+  
+  // Setup intersection observer for infinite scroll
+  useEffect(() => {
+    if (observer.current) {
+      observer.current.disconnect();
+    }
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !loading) {
+        loadMoreVideos();
+      }
+    });
+    
+    if (endOfFeedRef.current) {
+      observer.current.observe(endOfFeedRef.current);
+    }
+    
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [loading, displayedVideos.length]);
+  
+  const loadMoreVideos = () => {
+    setLoading(true);
+    
+    // Simulate API call with timeout
     setTimeout(() => {
-      setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
-      setIsPlaying(true);
-    }, 300);
+      // In a real app, this would fetch more videos from an API
+      // For now, we'll just cycle through the same videos again with different IDs
+      const currentLength = displayedVideos.length;
+      const newVideos = moodVideos.map((video, idx) => ({
+        ...video,
+        id: `${video.id}-${currentLength + idx}`, // Ensure unique IDs
+      })).slice(0, 2);
+      
+      setDisplayedVideos(prev => [...prev, ...newVideos]);
+      setLoading(false);
+    }, 1000);
   };
   
-  const handleLike = () => {
-    if (!likedVideos.includes(currentVideo.id)) {
-      setLikedVideos([...likedVideos, currentVideo.id]);
+  const handleLike = (videoId: string) => {
+    if (!likedVideos.includes(videoId)) {
+      setLikedVideos([...likedVideos, videoId]);
       toast({
         title: "Video liked!",
         description: "We'll recommend more like this in the future.",
         duration: 2000,
       });
     }
+  };
+  
+  const handleResponse = (videoId: string, response: 'like' | 'dislike' | 'skip') => {
+    if (response === 'like') {
+      handleLike(videoId);
+    }
+    
+    // Move to next video
+    setIsPlaying(false);
+    setTimeout(() => {
+      if (currentVideoIndex < displayedVideos.length - 1) {
+        setCurrentVideoIndex(prev => prev + 1);
+      } else {
+        // Reached the end of current feed, show a message
+        toast({
+          title: "Loading more videos...",
+          description: "Finding more videos for you.",
+          duration: 2000,
+        });
+        // This will trigger the infinite scroll to load more
+      }
+      setIsPlaying(true);
+    }, 300);
   };
   
   const handleFeelingBetter = () => {
@@ -158,56 +227,99 @@ const VideoRecommendation: React.FC<VideoRecommendationProps> = ({ mood, onResta
   };
   
   return (
-    <Card className="bliss-card p-6 animate-fade-in">
+    <Card className="bliss-card p-6 animate-fade-in w-full max-w-4xl">
       <h2 className="text-xl font-semibold text-center mb-4 text-bliss-teal">
         {mood ? `Based on your ${mood} mood, we recommend:` : 'Video recommendation'}
       </h2>
       
-      <div className="mb-4 overflow-hidden rounded-lg aspect-video bg-black">
-        {isPlaying ? (
-          <iframe 
-            className="w-full h-full"
-            src={currentVideo.embedUrl} 
-            title={currentVideo.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-            allowFullScreen
-          ></iframe>
-        ) : (
-          <div 
-            className="w-full h-full bg-cover bg-center flex items-center justify-center cursor-pointer"
-            style={{ backgroundImage: `url(${currentVideo.thumbnail})` }}
-            onClick={() => setIsPlaying(true)}
-          >
-            <div className="bg-black bg-opacity-50 rounded-full p-4">
-              <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"></path>
-              </svg>
+      <ScrollArea className="h-[calc(100vh-250px)]">
+        <div className="space-y-8 pb-8">
+          {displayedVideos.map((video, index) => (
+            <Card 
+              key={video.id} 
+              className={`p-4 ${index === currentVideoIndex ? 'ring-2 ring-bliss-teal' : 'opacity-70'}`}
+            >
+              <h3 className="text-lg font-medium mb-2">{video.title}</h3>
+              
+              <div className="mb-4 overflow-hidden rounded-lg aspect-video bg-black">
+                {(index === currentVideoIndex && isPlaying) ? (
+                  <iframe 
+                    className="w-full h-full"
+                    src={video.embedUrl} 
+                    title={video.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <div 
+                    className="w-full h-full bg-cover bg-center flex items-center justify-center cursor-pointer"
+                    style={{ backgroundImage: `url(${video.thumbnail})` }}
+                    onClick={() => {
+                      setCurrentVideoIndex(index);
+                      setIsPlaying(true);
+                    }}
+                  >
+                    <div className="bg-black bg-opacity-50 rounded-full p-4">
+                      <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {index === currentVideoIndex && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Button 
+                    onClick={() => handleResponse(video.id, 'like')}
+                    className="flex-1 flex items-center justify-center gap-2 bg-bliss-teal hover:bg-bliss-teal/90"
+                  >
+                    <ThumbsUp className="h-5 w-5" />
+                    Like
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => handleResponse(video.id, 'dislike')}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  >
+                    <ThumbsDown className="h-5 w-5" />
+                    Dislike
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => handleResponse(video.id, 'skip')}
+                    className="flex-1 flex items-center justify-center gap-2 bg-bliss-blue hover:bg-bliss-blue/90"
+                  >
+                    <SkipForward className="h-5 w-5" />
+                    Next
+                  </Button>
+                </div>
+              )}
+              
+              {index === currentVideoIndex && likedVideos.includes(video.id) && (
+                <div className="flex items-center gap-2 text-bliss-teal mb-4">
+                  <Heart className="h-4 w-4 fill-bliss-teal" />
+                  <span className="text-sm">You liked this video</span>
+                </div>
+              )}
+            </Card>
+          ))}
+          
+          {/* Loading indicator */}
+          {loading && (
+            <div className="text-center py-4">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-bliss-teal border-r-transparent"></div>
+              <p className="mt-2 text-gray-500">Finding more videos for you...</p>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+          
+          {/* Intersection observer target */}
+          <div ref={endOfFeedRef} className="h-4" />
+        </div>
+      </ScrollArea>
       
-      <h3 className="text-lg font-medium mb-4">{currentVideo.title}</h3>
-      
-      <div className="flex gap-2 mb-6">
-        <Button 
-          onClick={handleLike}
-          className={`flex-1 flex items-center justify-center gap-2 bg-bliss-teal hover:bg-bliss-teal/90`}
-        >
-          <Heart className={`h-5 w-5 ${likedVideos.includes(currentVideo.id) ? 'fill-white' : ''}`} />
-          {likedVideos.includes(currentVideo.id) ? 'Liked' : 'Like'}
-        </Button>
-        
-        <Button 
-          onClick={handleNextVideo}
-          className="flex-1 bg-bliss-blue hover:bg-bliss-blue/90"
-        >
-          Next Video
-        </Button>
-      </div>
-      
-      <div className="border-t border-gray-200 pt-4 text-center">
+      <div className="border-t border-gray-200 pt-4 text-center mt-6">
         <p className="mb-3 text-gray-600">How are you feeling now?</p>
         <Button 
           onClick={handleFeelingBetter}
