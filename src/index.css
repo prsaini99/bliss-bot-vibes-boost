@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 174 46% 40%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -32,22 +33,15 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -96,6 +90,25 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-b from-bliss-soft-blue to-bliss-soft-yellow min-h-screen text-foreground;
+    font-family: 'Nunito', 'Roboto', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+@layer components {
+  .bliss-card {
+    @apply bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-bliss-teal/20;
+  }
+  
+  .bliss-button {
+    @apply rounded-full transition-all duration-300 hover:shadow-md;
+  }
+  
+  .bliss-input {
+    @apply rounded-full border border-bliss-teal/30 focus:border-bliss-teal focus:ring-2 focus:ring-bliss-teal/20;
   }
 }

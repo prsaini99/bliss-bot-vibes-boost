@@ -1,13 +1,43 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import PageWrapper from '@/components/PageWrapper';
+import Welcome from '@/components/Welcome';
+import MoodAssessment from '@/components/MoodAssessment';
+import VideoRecommendation from '@/components/VideoRecommendation';
+
+type AppState = 'welcome' | 'assessment' | 'recommendation';
+type Mood = 'happy' | 'sad' | 'anxious' | 'calm' | 'energetic' | 'tired' | null;
 
 const Index = () => {
+  const [appState, setAppState] = useState<AppState>('welcome');
+  const [selectedMood, setSelectedMood] = useState<Mood>(null);
+  
+  const handleGetStarted = () => {
+    setAppState('assessment');
+  };
+  
+  const handleMoodSelected = (mood: Mood) => {
+    setSelectedMood(mood);
+    setAppState('recommendation');
+  };
+  
+  const handleRestart = () => {
+    setAppState('assessment');
+    setSelectedMood(null);
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <PageWrapper>
+      <div className="w-full max-w-4xl">
+        {appState === 'welcome' && <Welcome onGetStarted={handleGetStarted} />}
+        
+        {appState === 'assessment' && <MoodAssessment onMoodSelected={handleMoodSelected} />}
+        
+        {appState === 'recommendation' && (
+          <VideoRecommendation mood={selectedMood} onRestart={handleRestart} />
+        )}
       </div>
-    </div>
+    </PageWrapper>
   );
 };
 
