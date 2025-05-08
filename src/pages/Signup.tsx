@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
 
 // Define the psycometric test questions
 const psycometricQuestions = [
@@ -68,6 +69,15 @@ const psycometricQuestions = [
   }
 ];
 
+// Define the type for the form values to ensure type safety
+type FormValues = {
+  q1: string;
+  q2: string;
+  q3: string;
+  q4: string;
+  q5: string;
+};
+
 const Signup = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
@@ -75,8 +85,8 @@ const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Setup form for psycometric test
-  const form = useForm({
+  // Setup form for psycometric test with proper typing
+  const form = useForm<FormValues>({
     defaultValues: {
       q1: '',
       q2: '',
@@ -118,7 +128,7 @@ const Signup = () => {
     });
   };
   
-  const onPsycometricSubmit = (data: Record<string, string>) => {
+  const onPsycometricSubmit = (data: FormValues) => {
     // Process psycometric data
     console.log("Psycometric test results:", data);
     
@@ -146,10 +156,10 @@ const Signup = () => {
             <form onSubmit={handleInitialSignup} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
-                <input
+                <Input
                   id="email"
                   type="email"
-                  className="w-full p-2 border rounded-md"
+                  className="w-full"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -158,10 +168,10 @@ const Signup = () => {
               
               <div>
                 <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
-                <input
+                <Input
                   id="password"
                   type="password"
-                  className="w-full p-2 border rounded-md"
+                  className="w-full"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -192,7 +202,7 @@ const Signup = () => {
                   <FormField
                     key={q.id}
                     control={form.control}
-                    name={q.id}
+                    name={q.id as keyof FormValues}
                     render={({ field }) => (
                       <FormItem className="space-y-3">
                         <FormLabel>{q.question}</FormLabel>
