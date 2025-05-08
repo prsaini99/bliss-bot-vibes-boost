@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PageWrapper from '@/components/PageWrapper';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, ThumbsUp, ThumbsDown, SkipForward } from 'lucide-react';
+import { Heart, ThumbsUp, ThumbsDown, SkipForward, Film, Shorts } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface Video {
   id: string;
@@ -15,6 +15,7 @@ interface Video {
   embedUrl: string;
   tags: string[];
   mood: string;
+  contentType: 'video' | 'shorts';
 }
 
 // Sample video database
@@ -26,7 +27,8 @@ const sampleVideos: Video[] = [
     source: 'youtube',
     embedUrl: 'https://www.youtube.com/embed/BHACKCNDMW8',
     tags: ['nature', 'relaxing', 'calming'],
-    mood: 'calm'
+    mood: 'calm',
+    contentType: 'video'
   },
   {
     id: '2',
@@ -35,7 +37,8 @@ const sampleVideos: Video[] = [
     source: 'youtube',
     embedUrl: 'https://www.youtube.com/embed/q76bMs-NwRk',
     tags: ['funny', 'animals', 'cats'],
-    mood: 'happy'
+    mood: 'happy',
+    contentType: 'shorts'
   },
   {
     id: '3',
@@ -44,7 +47,8 @@ const sampleVideos: Video[] = [
     source: 'youtube',
     embedUrl: 'https://www.youtube.com/embed/O-6f5wQXSu8',
     tags: ['meditation', 'mindfulness', 'anxiety'],
-    mood: 'anxious'
+    mood: 'anxious',
+    contentType: 'video'
   },
   {
     id: '4',
@@ -53,7 +57,8 @@ const sampleVideos: Video[] = [
     source: 'youtube',
     embedUrl: 'https://www.youtube.com/embed/BHACKCNDMW8',
     tags: ['motivation', 'inspirational', 'success'],
-    mood: 'energetic'
+    mood: 'energetic',
+    contentType: 'shorts'
   },
   {
     id: '5',
@@ -62,7 +67,8 @@ const sampleVideos: Video[] = [
     source: 'youtube',
     embedUrl: 'https://www.youtube.com/embed/q76bMs-NwRk',
     tags: ['music', 'piano', 'relaxing'],
-    mood: 'tired'
+    mood: 'tired',
+    contentType: 'video'
   },
   {
     id: '6',
@@ -71,7 +77,8 @@ const sampleVideos: Video[] = [
     source: 'youtube',
     embedUrl: 'https://www.youtube.com/embed/BHACKCNDMW8',
     tags: ['animals', 'puppies', 'cute'],
-    mood: 'sad'
+    mood: 'sad',
+    contentType: 'shorts'
   }
 ];
 
@@ -81,18 +88,21 @@ const VideoFeed = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [userResponses, setUserResponses] = useState<{videoId: string, response: 'like' | 'dislike' | 'neutral' | 'skip'}[]>([]);
   const [loading, setLoading] = useState(false);
+  const [contentType, setContentType] = useState<'video' | 'shorts'>('video');
   
   const { toast } = useToast();
   const observer = useRef<IntersectionObserver | null>(null);
   const endOfFeedRef = useRef<HTMLDivElement>(null);
   
-  // Initialize feed with some videos
+  // Initialize feed with videos filtered by content type
   useEffect(() => {
-    // In a real app, these would come from an API based on user's mood/preferences
-    setFeedVideos(sampleVideos.slice(0, 3));
-  }, []);
+    const filteredVideos = sampleVideos.filter(v => v.contentType === contentType).slice(0, 3);
+    setFeedVideos(filteredVideos);
+    setCurrentVideoIndex(0);
+    setIsPlaying(false);
+  }, [contentType]);
   
-  // Function to fetch more videos based on previous responses
+  // Function to fetch more videos based on previous responses and content type
   const fetchMoreVideos = useCallback(() => {
     setLoading(true);
     
@@ -109,6 +119,7 @@ const VideoFeed = () => {
           const likedVideo = feedVideos.find(v => v.id === lastResponse.videoId);
           if (likedVideo) {
             newVideos = sampleVideos.filter(v => 
+              v.contentType === contentType &&
               v.tags.some(tag => likedVideo.tags.includes(tag)) && 
               !feedVideos.some(fv => fv.id === v.id)
             ).slice(0, 2);
@@ -116,21 +127,33 @@ const VideoFeed = () => {
         } else {
           // Get different types of videos
           newVideos = sampleVideos.filter(v => 
+            v.contentType === contentType &&
             !feedVideos.some(fv => fv.id === v.id)
           ).slice(0, 2);
         }
       } else {
         // Default recommendations if no responses yet
         newVideos = sampleVideos.filter(v => 
+          v.contentType === contentType &&
           !feedVideos.some(fv => fv.id === v.id)
         ).slice(0, 2);
+      }
+      
+      // If we couldn't find enough new videos, cycle through the existing ones with new IDs
+      if (newVideos.length < 2) {
+        const additionalVideos = sampleVideos
+          .filter(v => v.contentType === contentType)
+          .map((v, idx) => ({ ...v, id: `${v.id}-new-${idx}` }))
+          .slice(0, 2 - newVideos.length);
+        
+        newVideos = [...newVideos, ...additionalVideos];
       }
       
       // Add new videos to feed
       setFeedVideos(prev => [...prev, ...newVideos]);
       setLoading(false);
     }, 1500);
-  }, [feedVideos, userResponses]);
+  }, [feedVideos, userResponses, contentType]);
   
   // Setup intersection observer for infinite scroll
   useEffect(() => {
@@ -191,12 +214,36 @@ const VideoFeed = () => {
     }, 300);
   };
   
+  const handleContentTypeChange = (value: string) => {
+    if (value === 'video' || value === 'shorts') {
+      setContentType(value);
+    }
+  };
+  
   const currentVideo = feedVideos[currentVideoIndex];
 
   return (
     <PageWrapper>
       <div className="w-full max-w-4xl px-4">
         <h1 className="text-2xl font-bold text-center mb-6 text-bliss-teal">Your Personal Video Feed</h1>
+        
+        <div className="flex justify-center mb-6">
+          <ToggleGroup 
+            type="single" 
+            value={contentType}
+            onValueChange={handleContentTypeChange}
+            className="border rounded-lg"
+          >
+            <ToggleGroupItem value="video" aria-label="Toggle videos" className="flex gap-2 items-center">
+              <Film className="h-4 w-4" />
+              <span>Videos</span>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="shorts" aria-label="Toggle shorts" className="flex gap-2 items-center">
+              <Shorts className="h-4 w-4" />
+              <span>Shorts</span>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
         
         <ScrollArea className="h-[calc(100vh-200px)]">
           <div className="space-y-8 pb-8">
@@ -207,7 +254,7 @@ const VideoFeed = () => {
               >
                 <h2 className="text-xl font-semibold mb-4">{video.title}</h2>
                 
-                <div className="mb-4 overflow-hidden rounded-lg aspect-video bg-black">
+                <div className={`mb-4 overflow-hidden rounded-lg bg-black ${video.contentType === 'shorts' ? 'aspect-[9/16]' : 'aspect-video'}`}>
                   {(index === currentVideoIndex && isPlaying) ? (
                     <iframe 
                       className="w-full h-full"
