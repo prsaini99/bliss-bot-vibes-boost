@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Heart, ThumbsUp, ThumbsDown, SkipForward, Film, Shorts } from 'lucide-react';
+import { Heart, ThumbsUp, ThumbsDown, SkipForward, Film, VideoIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toggle } from '@/components/ui/toggle';
@@ -275,7 +274,7 @@ const VideoRecommendation: React.FC<VideoRecommendationProps> = ({ mood, onResta
             <span>Videos</span>
           </ToggleGroupItem>
           <ToggleGroupItem value="shorts" aria-label="Toggle shorts" className="flex gap-2 items-center">
-            <Shorts className="h-4 w-4" />
+            <VideoIcon className="h-4 w-4" />
             <span>Shorts</span>
           </ToggleGroupItem>
         </ToggleGroup>
