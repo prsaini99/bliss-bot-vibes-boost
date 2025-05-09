@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { 
   Settings, Shield, Bell, Heart, Camera, Mic, 
   Youtube, Search, Trash2, LogOut, CheckCircle,
-  User, Eye, RefreshCw
+  User, Eye, RefreshCw, Activity, Watch
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
